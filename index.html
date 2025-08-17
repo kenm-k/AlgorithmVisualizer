@@ -29,26 +29,36 @@
                 <summary class="brand"><b>レイアウト</b></summary>
                 <p class="brand"><b>※未実装です</b></p>
                 <select>
-                    <option>kamada_kawaiのアルゴリズム</option>
-                    <option>木</option>
+                    <option>Kamada-Kawaiのアルゴリズム</option>
+                    <option>Fruchterman-Reingoldのアルゴリズム</option>
+                    <option>木(Tilford-Reingoldのアルゴリズム)</option>
                     <option>森</option>
                 </select>
                 <p><button>レイアウト</button></p>
                 </details>
 
                 <details class="grp">
-                <summary class="brand"><b>詳細設定</b></summary>
+                <summary class="brand"><b>外観</b></summary>
                 <p>節の半径 : <input type="number" id="radius" min="0" value="25" onchange=" radius = this.value; drawRect(); fpoint = Math.floor(value/25*24); context.font = fpoint + 'px serif';"></p>
                 <p>キャンバスの幅 : <input type="number" id="cwidth" min="0" onchange="canvas.width = this.value;" value="800"> </p>
                 <p>キャンバスの高さ : <input type="number" id="cheight" min="0" onchange="canvas.height = this.value;" value="450"> </p>
+                <p>キャンバスの背景色 : <input type="color" style="width: 100px; height: 50px;" onchange="canvas.style.background = this.value;" value="#222222"></p>
+                </details>
+
                 <details class="grp">
                     <summary class="brand"><b>矢印</b></summary>
-                    <p>矢印の幅 : <input type="number" min="0"></p>
+                    <p>矢印の幅 : <input type="number" min="0" value="5" onchange="arrowWidth = this.value; drawRect();"></p>
+                    <p>頭の幅 : <input type="number" min="0" value="15" onchange="arrowHeadWidth = this.value; drawRect();"></p>
+                    <p>頭の高さ : <input type="number" min="0" value="10" onchange="arrowHeadHeight = this.value; drawRect();"></p>
                 </details>
                 <details class="grp">
                     <summary class="brand"><b>アニメーション</b></summary>
                 </details>
+                <details class="grp">
+                    <summary class="brand"><b>オブジェクト</b></summary>
                 </details>
+
+                <p style="margin: 30px;"> <button>JSON読み込み</button> <button>JSON出力</button> </p>
 
             </div>
 
@@ -58,9 +68,9 @@
 
         <section class="hgrp" style="clear: left;">
             <input type="file" accept="application/json">
-            <p><input type="number" min="0" max="0" id="frame"> / <span id="numberOfFrame">0</span>  <button onclick="drawRect();">更新</button></p>
-            <p><button onclick="if (!isPlaying){ playAnim(); }else{ stopFlag = true; }">再生/停止</button> <span id="animState">▶</span> </p>
-            <p><button onclick="convert();">変換</button></p>
+            <p><input type="number" min="0" max="0" id="frame" onchange="drawRect();"> / <span id="numberOfFrame">0</span>
+                <button onclick="if (!isPlaying){ playAnim(); }else{ stopFlag = true; }">再生/停止</button> <span id="animState">▶</span> </p>
+            <p><button onclick="convert();">JSON出力</button></p>
 
         </section>
     </div>

@@ -34,22 +34,33 @@ var context = canvas.getContext('2d');
 var count;
 var frame, numberOfFrame;
 
+var ux = 0, uy = 0;
+var prex, prey;
+
 var x, y, relX, relY, objX, objY;
 var fpoint;
-var radius;
+var radius = 25;
 var dragging = false;
 var draggingId = -1;
 var stopFlag = false;
 var isPlaying = false;
 
+//2倍したら大きさ2倍！
+var scale = 1.0;
+var scalingPivotX = 0, scalingPivotY = 0;
+
+var arrowHeadWidth = 15, arrowHeadHeight = 10, arrowWidth = 5;
+
 function init() {
+    ux = 0;
+    uy = 0;
+    scale = 1.0;
+
     count = graph["vertices"].length;
     frame = 0;
 
     objX = new Array(count);
     objY = new Array(count);
-
-    radius = 25;
 
     for (let i = 0; i < count; i++)
     {
@@ -71,14 +82,26 @@ function onDown(e) {
     x = e.clientX - offsetX;
     y = e.clientY - offsetY;
 
+    draggingId = -1;
+
     for (let i = 0; i < count; i++)
-        if ((x - objX[i])**2 + (y - objY[i])**2 < radius**2) {
+        if ((x/scale - (objX[i]-ux))**2 + ((y/scale - (objY[i]-uy)))**2 < radius**2) {
             dragging = true;
             draggingId = i;
-            relX = objX[i] - x;
-            relY = objY[i] - y;
-            break;
+            relX = objX[i] - x/scale;
+            relY = objY[i] - y/scale;
+            return;
         }
+    
+    if (draggingId == -1)
+    {
+        var offsetX = canvas.getBoundingClientRect().left;
+        var offsetY = canvas.getBoundingClientRect().top;
+        dragging = true;
+        prex = e.clientX - offsetX, prey = e.clientY - offsetY;
+        prex /= scale;
+        prey /= scale;
+    }
 }
 
 function onMove(e) {
@@ -88,10 +111,26 @@ function onMove(e) {
     x = e.clientX - offsetX;
     y = e.clientY - offsetY;
 
+    x /= scale;
+    y /= scale;
+
     if (dragging) {
-        objX[draggingId] = x + relX;
-        objY[draggingId] = y + relY;
-        drawRect();
+        if (draggingId == -1)
+        {
+            ux -= x - prex;
+            uy -= y - prey;
+
+            drawRect();
+
+            prex = x;
+            prey = y;
+        }
+        else
+        {
+            objX[draggingId] = x + relX;
+            objY[draggingId] = y + relY;
+            drawRect();
+        }
     }
 }
 
@@ -100,24 +139,35 @@ function onUp(e) {
 }
 
 function drawRect() {
+    context.font = fpoint*scale + "px serif";
+    context.textAlign = "center";
+
     frame = document.getElementById("frame").value - 1;
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawEdge();
 
+    var drx, dry;
+
     for (let i = 0; i < count; i++)
     {
         context.beginPath();
 
-        context.moveTo(objX[i] + radius, objY[i]);
-        context.arc(objX[i], objY[i], radius, 0, 2*Math.PI, true);
+        drx = (objX[i]-ux)*scale;
+        dry = (objY[i]-uy)*scale;
+
+        context.moveTo(drx + radius*scale, dry);
+        context.arc( drx, dry, radius*scale, 0, 2*Math.PI, true);
         //context.fillStyle = "white";
         context.fillStyle = graph["graphs"][frame]["graph"][i]["color"];
         context.fill();
 
-        context.moveTo(objX[i], objY[i], fpoint/2);
+        drx = (objX[i] - ux)*scale;
+        dry = (objY[i] - uy + fpoint/2)*scale;
+
+        context.moveTo( drx, dry );
         context.fillStyle = "black";
-        context.fillText(i, objX[i], objY[i] + fpoint/2);
+        context.fillText(i, drx, dry);
     }
 }
 
@@ -130,8 +180,8 @@ function drawUDEdge()
     {
         for (var v of u["vertices"])
         {
-            context.moveTo(objX[u["number"]], objY[u["number"]]);
-            context.lineTo(objX[v], objY[v]);
+            context.moveTo( (objX[u["number"]] - ux)*scale , (objY[u["number"]] - uy)*scale );
+            context.lineTo( (objX[v] - ux)*scale , (objY[v] - uy)*scale );
         }
     }
     context.stroke();
@@ -149,7 +199,7 @@ function drawEdge()
             var dy = radius * ((objY[v]-objY[u["number"]])/dist);
 
             context.beginPath();
-            context.arrow(objX[u["number"]], objY[u["number"]], objX[v] - dx, objY[v] - dy, [0, 2.5, -10, 2.5, -10, 7.5]);
+            context.arrow( (objX[u["number"]] - ux)*scale, (objY[u["number"]] - uy)*scale, (objX[v] - ux - dx)*scale, (objY[v] - uy - dy)*scale, [0, arrowWidth/2*scale, -arrowHeadHeight*scale, arrowWidth/2*scale, -arrowHeadHeight*scale, arrowHeadWidth/2*scale]);
             context.fill();
         }
     }
@@ -175,6 +225,25 @@ function convert()
 canvas.addEventListener('mousedown', onDown, false);
 canvas.addEventListener('mousemove', onMove, false);
 canvas.addEventListener('mouseup', onUp, false);
+
+canvas.addEventListener('wheel', (e)=>{
+
+    e.preventDefault();
+    var oldScale = scale;
+    scale += e.deltaY * -0.001;
+
+    var offsetX = canvas.getBoundingClientRect().left;
+    var offsetY = canvas.getBoundingClientRect().top;
+
+    var mx = e.clientX - offsetX;
+    var my = e.clientY - offsetY;
+
+    ux += mx*(1/oldScale - 1/scale);
+    uy += my*(1/oldScale - 1/scale);
+
+    drawRect();
+
+}, false);
 
 const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
