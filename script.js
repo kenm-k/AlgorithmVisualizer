@@ -1,0 +1,195 @@
+var graph;
+
+$(function(){
+
+    var reader;
+
+    function onChange(event) {
+        reader.readAsText(event.target.files[0]);
+    }
+
+    function onLoad(event) {
+        graph = JSON.parse(event.target.result);
+        console.log(graph);
+
+        numberOfFrame = graph["graphs"].length;
+        document.getElementById("numberOfFrame").textContent = numberOfFrame;
+        var frameInput = document.getElementById("frame");
+        frameInput.min = 1;
+        frameInput.max = numberOfFrame;
+        frameInput.value = 1;
+
+        init();
+    }
+
+    reader = new FileReader();
+    reader.onload = onLoad;
+
+    $('input[type="file"]').on('change', onChange);
+});
+
+var canvas = document.getElementById("canvas");
+var context = canvas.getContext('2d');
+
+var count;
+var frame, numberOfFrame;
+
+var x, y, relX, relY, objX, objY;
+var fpoint;
+var radius;
+var dragging = false;
+var draggingId = -1;
+var stopFlag = false;
+var isPlaying = false;
+
+function init() {
+    count = graph["vertices"].length;
+    frame = 0;
+
+    objX = new Array(count);
+    objY = new Array(count);
+
+    radius = 25;
+
+    for (let i = 0; i < count; i++)
+    {
+        objX[i] = (radius*(1 + i*2)) % canvas.width;
+        objY[i] = radius*(1 + 2*Math.floor((radius*(1+i*2))/canvas.width)) % canvas.height;
+    }
+
+    fpoint = 24;
+    context.font = fpoint + "px serif";
+    context.textAlign = "center";
+
+    drawRect();
+}
+
+function onDown(e) {
+    var offsetX = canvas.getBoundingClientRect().left;
+    var offsetY = canvas.getBoundingClientRect().top;
+
+    x = e.clientX - offsetX;
+    y = e.clientY - offsetY;
+
+    for (let i = 0; i < count; i++)
+        if ((x - objX[i])**2 + (y - objY[i])**2 < radius**2) {
+            dragging = true;
+            draggingId = i;
+            relX = objX[i] - x;
+            relY = objY[i] - y;
+            break;
+        }
+}
+
+function onMove(e) {
+    var offsetX = canvas.getBoundingClientRect().left;
+    var offsetY = canvas.getBoundingClientRect().top;
+
+    x = e.clientX - offsetX;
+    y = e.clientY - offsetY;
+
+    if (dragging) {
+        objX[draggingId] = x + relX;
+        objY[draggingId] = y + relY;
+        drawRect();
+    }
+}
+
+function onUp(e) {
+    dragging = false;
+}
+
+function drawRect() {
+    frame = document.getElementById("frame").value - 1;
+
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    drawEdge();
+
+    for (let i = 0; i < count; i++)
+    {
+        context.beginPath();
+
+        context.moveTo(objX[i] + radius, objY[i]);
+        context.arc(objX[i], objY[i], radius, 0, 2*Math.PI, true);
+        //context.fillStyle = "white";
+        context.fillStyle = graph["graphs"][frame]["graph"][i]["color"];
+        context.fill();
+
+        context.moveTo(objX[i], objY[i], fpoint/2);
+        context.fillStyle = "black";
+        context.fillText(i, objX[i], objY[i] + fpoint/2);
+    }
+}
+
+//Undirected Graph
+function drawUDEdge()
+{
+    frame = document.getElementById("frame").value - 1;
+    context.beginPath();
+    for (var u of graph["graphs"][frame]["graph"])
+    {
+        for (var v of u["vertices"])
+        {
+            context.moveTo(objX[u["number"]], objY[u["number"]]);
+            context.lineTo(objX[v], objY[v]);
+        }
+    }
+    context.stroke();
+}
+
+function drawEdge()
+{
+    context.fillStyle = "black";
+    for (var u of graph["graphs"][frame]["graph"])
+    {
+        for (var v of u["vertices"])
+        {
+            var dist = Math.sqrt((objX[v]-objX[u["number"]])**2 + (objY[v]-objY[u["number"]])**2);
+            var dx = radius * ((objX[v]-objX[u["number"]])/dist);
+            var dy = radius * ((objY[v]-objY[u["number"]])/dist);
+
+            context.beginPath();
+            context.arrow(objX[u["number"]], objY[u["number"]], objX[v] - dx, objY[v] - dy, [0, 2.5, -10, 2.5, -10, 7.5]);
+            context.fill();
+        }
+    }
+}
+
+function convert()
+{
+    graph["drawing_mode"] = "positioned layout";
+    graph["position"] = new Array();
+    for (let i = 0; i < count; i++)
+        graph["position"].push({"number":i, "pos":[objX[i]/canvas.width, objY[i]/canvas.height]});
+
+    const blob = new Blob([JSON.stringify(graph)], { type: 'application/json' });
+    const url = (window.URL || window.webkitURL).createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'positioned_graph.json';
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+}
+
+canvas.addEventListener('mousedown', onDown, false);
+canvas.addEventListener('mousemove', onMove, false);
+canvas.addEventListener('mouseup', onUp, false);
+
+const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
+
+async function playAnim()
+{
+    document.getElementById("animState").textContent = "⏸";
+    isPlaying = true;
+    frameInput = document.getElementById("frame");
+    stopFlag = false;
+    for (let i = frameInput.value; !stopFlag && i < numberOfFrame; frameInput.value = ++i)
+    {
+        drawRect();
+        await sleep(1000);
+    }
+    isPlaying = false;
+    stopFlag = false;
+    document.getElementById("animState").textContent = "▶";
+}
