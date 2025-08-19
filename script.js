@@ -19,6 +19,8 @@ $(function(){
         frameInput.max = numberOfFrame;
         frameInput.value = 1;
 
+        graphUpdate();
+
         init();
     }
 
@@ -44,6 +46,8 @@ var dragging = false;
 var draggingId = -1;
 var stopFlag = false;
 var isPlaying = false;
+
+var currentGraph;
 
 //2倍したら大きさ2倍！
 var scale = 1.0;
@@ -74,6 +78,17 @@ function init() {
 
     drawRect();
 }
+
+function graphUpdate()
+{
+    frame = document.getElementById("frame").value - 1;
+    currentGraph = graph["graphs"][frame];
+}
+
+document.getElementById("frame").addEventListener("change", ()=>{
+    graphUpdate();
+    drawRect();
+}, false);
 
 function onDown(e) {
     var offsetX = canvas.getBoundingClientRect().left;
@@ -142,8 +157,6 @@ function drawRect() {
     context.font = fpoint*scale + "px serif";
     context.textAlign = "center";
 
-    frame = document.getElementById("frame").value - 1;
-
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawEdge();
 
@@ -159,7 +172,7 @@ function drawRect() {
         context.moveTo(drx + radius*scale, dry);
         context.arc( drx, dry, radius*scale, 0, 2*Math.PI, true);
         //context.fillStyle = "white";
-        context.fillStyle = graph["graphs"][frame]["graph"][i]["color"];
+        context.fillStyle = "#" + currentGraph["graph"][i]["color"].toString(16);
         context.fill();
 
         drx = (objX[i] - ux)*scale;
@@ -167,7 +180,7 @@ function drawRect() {
 
         context.moveTo( drx, dry );
         context.fillStyle = "black";
-        context.fillText(i, drx, dry);
+        context.fillText(currentGraph["graph"][i]["label"], drx, dry);
     }
 }
 
@@ -176,7 +189,7 @@ function drawUDEdge()
 {
     frame = document.getElementById("frame").value - 1;
     context.beginPath();
-    for (var u of graph["graphs"][frame]["graph"])
+    for (var u of currentGraph["graph"])
     {
         for (var v of u["vertices"])
         {
@@ -190,7 +203,7 @@ function drawUDEdge()
 function drawEdge()
 {
     context.fillStyle = "black";
-    for (var u of graph["graphs"][frame]["graph"])
+    for (var u of currentGraph["graph"])
     {
         for (var v of u["vertices"])
         {
@@ -232,6 +245,8 @@ canvas.addEventListener('wheel', (e)=>{
     var oldScale = scale;
     scale += e.deltaY * -0.001;
 
+    if (scale < 0.01 || scale > 10) scale = oldScale;
+
     var offsetX = canvas.getBoundingClientRect().left;
     var offsetY = canvas.getBoundingClientRect().top;
 
@@ -255,10 +270,21 @@ async function playAnim()
     stopFlag = false;
     for (let i = frameInput.value; !stopFlag && i < numberOfFrame; frameInput.value = ++i)
     {
+        graphUpdate();
         drawRect();
         await sleep(1000);
     }
+    graphUpdate();
+    drawRect();
     isPlaying = false;
     stopFlag = false;
     document.getElementById("animState").textContent = "▶";
+}
+
+function resetPos()
+{
+    ux = uy = 0;
+    scale = 1;
+
+    drawRect();
 }
