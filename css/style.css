@@ -1,0 +1,329 @@
+/* 以下、ChatGPTが生成 */
+
+/* ベースリセット */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", sans-serif;
+}
+
+/* レイアウト全体 */
+.app {
+  display: grid;
+  grid-template-columns: 400px 1fr; /* 左: サイドバー, 右: キャンバス */
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* サイドバー */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  border-right: 1px solid #e5e7eb;
+  background: #f8fafc;
+  overflow-y: auto;
+}
+
+/* サイドバー内の入力やボタン */
+.sidebar input,
+.sidebar select,
+.sidebar button {
+  margin: 4px 0;
+  padding: 6px 8px;
+  font-size: 0.9rem;
+}
+
+.sidebar button {
+  border: 1px solid #cbd5e1;
+  background: white;
+  border-radius: 12px;
+  cursor: pointer;
+}
+.sidebar button:hover {
+  background: #f1f5f9;
+}
+
+/* details 要素 */
+.sidebar details {
+  margin: 8px 0;
+  padding: 4px 0;
+}
+.sidebar summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* スクロールエリアの装飾 */
+.sidebar div[style*="overflow-y: scroll"] {
+  border: 2px solid #cbd5e1 !important;
+  border-radius: 8px;
+  padding: 6px;
+  background: #ffffff;
+}
+
+/* スクロールバーをおしゃれに */
+.sidebar div[style*="overflow-y: scroll"]::-webkit-scrollbar {
+  width: 8px;
+}
+.sidebar div[style*="overflow-y: scroll"]::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+.sidebar div[style*="overflow-y: scroll"]::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 8px;
+}
+.sidebar div[style*="overflow-y: scroll"]::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* キャンバス領域 */
+.stage {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #c7c7c7; /* デフォルト背景 */
+}
+
+/* 見出しスタイル */
+.sidebar h1 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  text-align: center;
+  color: #1e293b;
+  letter-spacing: 1px;
+
+  /* グラデーション文字 */
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  /* 下線アクセント */
+  border-bottom: 2px solid #3b82f6;
+}
+
+/* summary 基本スタイル */
+.sidebar summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.sidebar summary:hover {
+  background: #e2e8f0;
+}
+
+/* 第一階層 */
+.sidebar details > summary {
+  font-size: 1rem;
+  color: #1e293b;
+  background: #f1f5f9;
+  margin-top: 4px;
+}
+
+/* 第二階層 */
+.sidebar details details > summary {
+  font-size: 0.95rem;
+  color: #334155;
+  background: #f8fafc;
+  margin-left: 12px;   /* インデント */
+  border-left: 3px solid #94a3b8;
+  padding-left: 8px;
+}
+
+/* 第三階層（もしさらに入れ子がある場合） */
+.sidebar details details details > summary {
+  font-size: 0.9rem;
+  color: #475569;
+  background: #ffffff;
+  margin-left: 24px;   /* さらにインデント */
+  border-left: 3px solid #cbd5e1;
+  padding-left: 8px;
+}
+
+/* details 基本 */
+.sidebar details {
+  margin: 6px 0;
+  padding: 4px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+/* 第1階層 details */
+.sidebar > details {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding: 6px;
+}
+
+/* 第2階層 details */
+.sidebar details > details {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  margin-left: 12px;   /* インデント */
+  padding: 6px;
+}
+
+/* 第3階層 details（もしさらに入れ子がある場合） */
+.sidebar details > details > details {
+  background: #ffffff;
+  border: 1px dashed #cbd5e1;
+  margin-left: 24px;
+  padding: 6px;
+}
+
+/* summary スタイルも階層ごとに調整 */
+.sidebar > details > summary {
+  font-weight: 700;
+  color: #1e293b;
+}
+.sidebar details > details > summary {
+  font-weight: 600;
+  color: #334155;
+}
+.sidebar details > details > details > summary {
+  font-weight: 500;
+  color: #475569;
+}
+
+/* サイドバー全体にスクロールが出たときの縦スクロールバー */
+.sidebar {
+  scrollbar-width: thin;              /* Firefox用: 細め */
+  scrollbar-color: #3b82f6 #f1f5f9;   /* Firefox用: (thumb色 track色) */
+}
+
+/* Chrome, Edge, Safari (Webkit系) */
+.sidebar::-webkit-scrollbar {
+  width: 10px;   /* スクロールバーの太さ */
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: #f1f5f9;   /* トラック部分 */
+  border-radius: 8px;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #06b6d4); /* 青〜水色のグラデーション */
+  border-radius: 8px;
+  border: 2px solid #f1f5f9; /* 周りに隙間を作ってスッキリ見せる */
+  transition: background 0.2s;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #2563eb, #0891b2); /* 濃いめブルーに変化 */
+}
+
+/* details 内の select, input を親幅いっぱいに収める */
+.sidebar details select,
+.sidebar details input[type="text"],
+.sidebar details input[type="number"],
+.sidebar details input[type="color"],
+.sidebar details input[type="file"] {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 4px 0;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* ボタンとの高さ合わせ */
+.sidebar details button {
+  width: 100%;
+  margin: 4px 0;
+}
+
+
+/* サイドバーのボタンを横幅いっぱいに */
+.sidebar button {
+  display: block;              /* インラインからブロックに変更 */
+  width: 100%;                 /* 横幅いっぱい */
+  margin: 6px 0;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #3b82f6;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sidebar button:hover {
+  background: linear-gradient(90deg, #2563eb, #0891b2);
+  transform: translateY(-1px);
+}
+
+.sidebar button:active {
+  transform: translateY(0);
+}
+
+/* ファイル選択 input を全幅おしゃれ化 */
+.sidebar input[type="file"] {
+  width: 100%;
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: #334155;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px;
+  cursor: pointer;
+
+  /* デフォルトのボタン部分を隠してテキストだけにする */
+  -webkit-appearance: none;
+}
+
+.sidebar input[type="file"]::file-selector-button {
+  margin-right: 10px;
+  border: none;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  color: white;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.sidebar input[type="file"]::file-selector-button:hover {
+  background: linear-gradient(90deg, #2563eb, #0891b2);
+  transform: translateY(-1px);
+}
+
+.sidebar input[type="file"]::file-selector-button:active {
+  transform: translateY(0);
+}
+
+/* ここまで */
+
+.lump
+{
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    padding: 6px;
+    margin: 6px 0;
+    border-radius: 6px;
+}

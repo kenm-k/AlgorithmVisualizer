@@ -3,103 +3,105 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Graph Visualizer</title>
-  <link rel="stylesheet" href="style.css" type="text/css">
+  <title>Algorithm Visualizer</title>
+  <link rel="stylesheet" href="./css/style.css" type="text/css">
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src="https://frogcat.github.io/canvas-arrow/canvas-arrow.js"></script>
+  <script src="./js/mymath.js"></script>
 </head>
 <body>
 
-  <header>
-    <div class="container navbar">
-      <div class="brand">Graph<b>Visualizer</b></div>
-    </div>
-  </header>
+    <div class="app">
 
-  <h1 style="margin : 30px;"> Graph<b style="background: linear-gradient(90deg, var(--brand), var(--brand-2)); -webkit-background-clip: text; background-clip: text; color: transparent;">Visualizer</b></h1>
+            <aside class="sidebar">
 
-    <div style="margin: 30px;">
-        <div>
+                <h1>Algorithm Visualizer</h1>
 
-            <div style="display: flex;">
-
-                <section class="hgrp" style="clear: left; width: 50%; margin: 10px;">
                     <input type="file" accept="application/json">
-                    <p><input type="number" min="0" max="0" id="frame"> / <span id="numberOfFrame">0</span>
-                        <button onclick="if (!isPlaying){ playAnim(); }else{ stopFlag = true; }">再生/停止</button> <span id="animState">▶</span> </p>
-                    <p> <button onclick="resetPos();">位置を戻す</button> </p>
-                    <p><button onclick="convert();">JSON出力</button></p>
 
-                </section>
+                    <button onclick="resetPos();">位置を戻す</button>
 
-                <div style="margin: 10px; border: 5px solid transparent; border-image: linear-gradient(to right, #080046, #9b8dff) 1; height: 450px; width: 50%; overflow: scroll;">
+                    <details>
+                        <summary><b>アニメーション</b></summary>
+                        <p>fps : <input type="number" id="fps" value="30" onchange="paramUpdate(); setFig(fpInterval);"></p>
+                        <p style="display: none;">グラフの更新間隔(ms) : <input type="number" id="frameInterval_ms" value="1000" onchange="paramUpdate(); setFig(fpInterval);"></p>
 
-                    <details class="grp">
-                    <summary class="brand"><b>レイアウト</b></summary>
-                    <p class="brand"><b>※未実装です</b></p>
-                    <select>
-                        <option>Kamada-Kawaiのアルゴリズム</option>
-                        <option>Fruchterman-Reingoldのアルゴリズム</option>
-                        <option>木(Tilford-Reingoldのアルゴリズム)</option>
-                        <option>森</option>
-                    </select>
-                    <p><button>レイアウト</button></p>
-
-                    <details class="grp">
-                        <summary class="brand"><b>根付き木 Tilford-Reingoldのアルゴリズム</b></summary>
-                        <p>閉路の検知はまだ実装してないので、閉路がないようにしてください！</p>
-                        <p>根 : <input id="ttreeRoot" type="number" value="0"></p>
-                        <p>節同士の最短距離(px) : <input id="tdistBNodes" type="number" value="50"></p>
-                        <select id="tmode">
-                            <option value="default">親-子間の高さは一定</option>
-                            <option value="fractal">自己相似(っぽい)</option>
-                        </select>
-                        <p><button onclick="tilford_raingold();">レイアウト</button></p>
+                        <div class="lump" style="display: flex; align-items: center">
+                            グラフ : <input style="width: 50%;" type="number" min="1" max="1" id="frame" onclick="paramUpdate(); resetFlag = false;"> / <span id="numberOfFrame">1</span>
+                        </div>
+                        <div class="lump" style="display: flex; align-items: center">
+                            フレーム : <input style="width: 50%;" type="number" min="1" max="1" id="fig" onclick="paramUpdate(); resetFlag = false;"> / <span id="numberOfFig">0</span>
+                        </div>
+                        <div style="display: flex;">
+                            <button onclick="if(resetFlag) {setFig(1); resetFlag = false;}; if (!isPlaying){ playAnim(); }else{ stopFlag = true; }" id="playButton">▶</button>
+                            <button onclick="if(!isPlaying){resetGraph(); resetFlag = true;}">リセット</button>
+                        </div>
+                    </details>
+        
+                    <details>
+                        <summary><b>録画</b></summary>
+                        <button onclick="if (!recording) {startRecord(); this.textContent = '録画⏸';} else {stopRecord();this.textContent = '録画▶';} " id="playButton">録画▶</button>
                     </details>
 
+                    <details>
+                        <summary><b>外観</b></summary>
+                        <p>キャンバスの背景色 : <input type="color" style="width: 100px; height: 50px;" onchange="canvas.style.background = this.value;" value="#c7c7c7"></p>
                     </details>
 
-                    <details class="grp">
-                    <summary class="brand"><b>外観</b></summary>
-                    <p>節の半径 : <input type="number" id="radius" min="0" value="25" onchange=" radius = this.value; drawRect(); fpoint = Math.floor(value/25*24); context.font = fpoint + 'px serif';"></p>
-                    <p>キャンバスの幅 : <input type="number" id="cwidth" min="0" onchange="canvas.width = this.value;" value="800"> </p>
-                    <p>キャンバスの高さ : <input type="number" id="cheight" min="0" onchange="canvas.height = this.value;" value="450"> </p>
-                    <p>キャンバスの背景色 : <input type="color" style="width: 100px; height: 50px;" onchange="canvas.style.background = this.value;" value="#222222"></p>
-                    </details>
+                    <div id="GManager" class="lump">
+                        <div class="lump">
+                            <b>オブジェクト</b>
+                            <br>
+                            <select id="filterMode" onchange="updateGMan();">
+                                <option>AND</option>
+                                <option>OR</option>
+                            </select>
+                            <input type="text" id="filter" placeholder="filter カンマ区切り" onchange="updateGMan();">
+                        </div>
+                        <div class="lump" id="selectedGObj">
+                        <b>selected</b>
+                        </div>
+                    </div>
+            </aside>
 
-                    <details class="grp">
-                        <summary class="brand"><b>矢印</b></summary>
-                        <p>矢印の幅 : <input type="number" min="0" value="5" onchange="arrowWidth = this.value; drawRect();"></p>
-                        <p>頭の幅 : <input type="number" min="0" value="15" onchange="arrowHeadWidth = this.value; drawRect();"></p>
-                        <p>頭の高さ : <input type="number" min="0" value="10" onchange="arrowHeadHeight = this.value; drawRect();"></p>
-                    </details>
-                    <details class="grp">
-                        <summary class="brand"><b>アニメーション</b></summary>
-                    </details>
-                    <details class="grp">
-                        <summary class="brand"><b>オブジェクト</b></summary>
-                    </details>
+            <main class="stage">
+                    <canvas id="canvas"></canvas>
+            </class>
 
-                    <p style="margin: 30px;"> <button>JSON読み込み</button> <button>JSON出力</button> </p>
-
-                </div>
-            </div>
-
-            <br>
-
-            <div style="width: 100%; position: relative;">
-                    <canvas id="canvas" width="800" height="450" style="position: absolute; left: 50%; transform: translate(-50%,0);"></canvas>
-
-                <br>
-                <br>
-            </div>
-
-        </div>
     </div>
 
-    <br>
+    <script src="./js/glovalVar.js"></script>
+    <script src="./js/GObjects.js"></script>
+    <script src="./js/animation.js"></script>
+    <script src="./js/canvas.js"></script>
+    <script src="./js/file.js"></script>
+    <script src="./js/graphLayout.js"></script>
+    <script src="./js/drawing.js"></script>
+    <script src="./js/GManager.js"></script>
+    <script>
+        function resizeCanvasToDisplaySize() {
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            const displayWidth  = Math.round(rect.width  * dpr);
+            const displayHeight = Math.round(rect.height * dpr);
 
-    <script src="script.js"></script>
-    <script src="graphLayout.js"></script>
+            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+                // 座標系をDPRに合わせてスケール
+                context.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+        }
+
+        // 初期化とリサイズ対応
+        function render() {
+            resizeCanvasToDisplaySize();
+            draw();
+        }
+        window.addEventListener('resize', render);
+        matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`).addEventListener?.('change', render);
+
+        render();
+    </script>
 </body>
 </html>
