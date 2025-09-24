@@ -190,7 +190,7 @@ class Graph extends GObject
     nodse = null;
     graphs = null;
     currentGraph = null;
-    layoutFunction = "fruchterman_raingold";
+    layoutFunction = "fruchterman_reingold";
     distNodes = 50;
     fit = true;
 
@@ -273,11 +273,11 @@ class Graph extends GObject
                         },
                         {
                             text : "Fruchterman-Reingoldのアルゴリズム",
-                            value: "fruchterman_raingold",
+                            value: "fruchterman_reingold",
                         }
                     ], param: "layoutFunction", id: "layoutFunction", default:this.layoutFunction},
 
-                    {mode:"if-details", text: "Fruchterman-Reingoldのアルゴリズム", if: (g)=>{ return g.layoutFunction == "fruchterman_raingold"; }},
+                    {mode:"if-details", text: "Fruchterman-Reingoldのアルゴリズム", if: (g)=>{ return g.layoutFunction == "fruchterman_reingold"; }},
                         {mode:"number", param:"iteration", default:this.iteration},
                         {mode:"number", param:"constant", default:this.constant},
                         {mode:"number", param:"interval", default:this.interval},
@@ -285,7 +285,7 @@ class Graph extends GObject
                         {mode:"check", param:"randomize", checked: this.randomize},
                     {mode:"/details"},
 
-                    {mode: "if-details", text: "範囲", if: (g)=>{ return g.layoutFunction == "fruchterman_raingold" || g.layoutFunction == "random"; }},
+                    {mode: "if-details", text: "範囲", if: (g)=>{ return g.layoutFunction == "fruchterman_reingold" || g.layoutFunction == "random"; }},
                         {mode:"number", param:"rangeX", default:this.rangeX},
                         {mode:"number", param:"rangeY", default:this.rangeY},
                         {mode:"check", param:"visualizeRange", default:this.visualizeRange},
@@ -387,8 +387,8 @@ class DTree extends DGraph
 
         rlf["options"]?.push(
             {
-                text : "Tilford-Raingold's Algorithm(根付き木)",
-                value: "tilford_raingold",
+                text : "Tilford-Reingold's Algorithm(根付き木)",
+                value: "tilford_reingold",
             }
         );
 
@@ -465,8 +465,8 @@ class Tree extends UDGraph
 
         ret[searchObj(ret, "layoutFunction")]["options"]?.push(
             {
-                text : "Tilford-Raingold's Algorithm(根付き木)",
-                value: "tilford_raingold",
+                text : "Tilford-Reingold's Algorithm(根付き木)",
+                value: "tilford_reingold",
             }
         );
 

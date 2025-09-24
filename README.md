@@ -63,8 +63,8 @@ AlgoVizは現在グラフアニメーションに対応しています。
 | レイアウト関数 | 説明 |
 | - | - |
 | ランダム配置 | 各Nodeを指定した範囲内でランダムに配置します。<br>グラフGObject → レイアウト → 範囲にて、範囲を設定できます。<br>visualizeRangeをチェックすると、範囲を可視化できます。 |
-| Fruchterman-Reingoldのアルゴリズム | Fruchterman-Reingoldのアルゴリズムで各Nodeを配置します。<br>グラフGObject → レイアウト → Fruchterman-Raingoldのアルゴリズムから、詳細を設定します。<br>- iteration : 試行回数を設定します。<br>- constant : Node間の離れ具合の定数を指定します。<br>- interval : 試行ごとの間隔をミリ秒で指定します。<br>- fit : 指定した範囲内に収めるかどうか。範囲はランダム配置と共通です。チェックしたとき、範囲内に収められます。<br>- randomize : 各Nodeの試行における初期位置をランダムにするか、今のままにするか決めます。チェックしたとき、ランダムになります。 |
-| Tilford-Raingoldのアルゴリズム | これは、木限定の関数です。<br>根付き木に対して、各ノードを子の上かつ中心に配置します。<br>rootにて、親を指定します。初期値は0-indexedでは0、1-indexedでは1となります。<br>distNodesにて、各ノード間の間隔を指定します。<br> |
+| Fruchterman-Reingoldのアルゴリズム | Fruchterman-Reingoldのアルゴリズムで各Nodeを配置します。<br>グラフGObject → レイアウト → Fruchterman-Reingoldのアルゴリズムから、詳細を設定します。<br>- iteration : 試行回数を設定します。<br>- constant : Node間の離れ具合の定数を指定します。<br>- interval : 試行ごとの間隔をミリ秒で指定します。<br>- fit : 指定した範囲内に収めるかどうか。範囲はランダム配置と共通です。チェックしたとき、範囲内に収められます。<br>- randomize : 各Nodeの試行における初期位置をランダムにするか、今のままにするか決めます。チェックしたとき、ランダムになります。 |
+| Tilford-Reingoldのアルゴリズム | これは、木限定の関数です。<br>根付き木に対して、各ノードを子の上かつ中心に配置します。<br>rootにて、親を指定します。初期値は0-indexedでは0、1-indexedでは1となります。<br>distNodesにて、各ノード間の間隔を指定します。<br> |
 
 # サンプル
 exampleディレクトリの中にサンプルのデータがあります。

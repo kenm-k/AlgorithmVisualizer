@@ -2,7 +2,7 @@ const sleep = (time) => new Promise((resolve) => setTimeout(resolve, time));
 
 let layoutFunctions = {
     //参考 : https://www.slideshare.net/slideshow/drawing-tree-algorithms/33708903#17
-    tilford_raingold :
+    tilford_reingold :
     /**
      * 根付き木を配置
      * @param {DTree} dtree 根付き木
@@ -23,11 +23,11 @@ let layoutFunctions = {
 
         deepest = culcTreeDepth(root, 0);
 
-        tilford_raingold_sub(root, 0, 0);
+        tilford_reingold_sub(root, 0, 0);
 
         //xpos ... その木で、postorderで一番最初にでてくる葉のx座標
         //なので、x=0となる基準は、木全体の一番左の葉
-        function tilford_raingold_sub(v, xpos, depth)
+        function tilford_reingold_sub(v, xpos, depth)
         {
             //節の高さ方向の間隔はheight(=deepest - depth)を変数とした関数の導関数
             //下の右辺がその関数、一次関数なら一定
@@ -62,7 +62,7 @@ let layoutFunctions = {
             {
                 let un = u["number"] - base;
 
-                let ret = tilford_raingold_sub(un, pos, depth+1);
+                let ret = tilford_reingold_sub(un, pos, depth+1);
 
                 //子要素を左に詰める
                 pos = ret[1] + 2*nodes[un].radius + tdistBNodes;
@@ -97,7 +97,7 @@ let layoutFunctions = {
 
     //https://mfumi.hatenadiary.org/entry/20140213/1392287682
     //https://web.archive.org/web/20131201004028/http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.13.8444&rep=rep1&type=pdf
-    fruchterman_raingold:
+    fruchterman_reingold:
     async function(graph)
     {
         const iteration = graph.iteration;
