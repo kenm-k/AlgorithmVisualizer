@@ -12,11 +12,23 @@ function init() {
         gObjects.push(nodes[i]);
     }
 
-    let dt = new DTree( 0, 0, nodes, graph );
-    dt.logger = new Text();
-    gObjects.push(dt.logger);
+    let gob;
+    switch(graph.type)
+    {
+        case "tree":
+            if (graph.directed) gob = new DTree(0, 0, nodes, graph);
+            else gob = new Tree(0, 0, nodes, graph);
+            break;
 
-    gObjects.push( dt );
+        case "graph":
+            if (graph.directed) gob = new DGraph(0, 0, nodes, graph);
+            else gob = new UDGraph(0, 0, nodes, graph);
+            break;
+    }
+    gob.logger = new Text();
+    gObjects.push(gob.logger);
+
+    gObjects.push( gob );
 
     updateGMan();
 
@@ -28,7 +40,7 @@ function init() {
     
     paramUpdate();
 
-    dt.layout();
+    gob.layout();
 }
 
 function draw(ratio=fig/fpInterval) {

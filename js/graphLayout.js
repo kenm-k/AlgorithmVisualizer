@@ -10,8 +10,9 @@ let layoutFunctions = {
     function(dtree)
     {
         currentGraph = dtree.currentGraph;
-        root = dtree.root;
+        root = dtree.root - dtree.graphs["base"];
         tdistBNodes = Number(dtree.distNodes);
+        let base = dtree.graphs["base"];
 
         let nodes = new Array();
 
@@ -59,10 +60,12 @@ let layoutFunctions = {
 
             for (let u of childs)
             {
-                let ret = tilford_raingold_sub(u["number"], pos, depth+1);
+                let un = u["number"] - base;
+
+                let ret = tilford_raingold_sub(un, pos, depth+1);
 
                 //子要素を左に詰める
-                pos = ret[1] + 2*nodes[u["number"]].radius + tdistBNodes;
+                pos = ret[1] + 2*nodes[un].radius + tdistBNodes;
                 
                 l = Math.min(l, ret[0]);
                 r = Math.max(r, ret[1]);
@@ -81,10 +84,12 @@ let layoutFunctions = {
         function culcTreeDepth(u, depth)
         {
             let cdepth = depth;
+            console.log(u);
             let childs = currentGraph["graph"][u]["edges"];
             for (let v of childs)
             {
-                cdepth = Math.max(cdepth, culcTreeDepth(v["number"], depth+1));
+                let vn = v["number"] - base;
+                cdepth = Math.max(cdepth, culcTreeDepth(vn, depth+1));
             }
             return cdepth;
         }
@@ -160,8 +165,10 @@ let layoutFunctions = {
                 let childs = graph.currentGraph["graph"][v]["edges"];
                 for (let u of childs)
                 {
-                    let dx = nodes[v].x - nodes[u["number"]].x;
-                    let dy = nodes[v].y - nodes[u["number"]].y;
+                    let un = u["number"] - graph.graphs["base"];
+
+                    let dx = nodes[v].x - nodes[un].x;
+                    let dy = nodes[v].y - nodes[un].y;
                     let delta = Math.sqrt(dx*dx+dy*dy);
                     if (delta != 0)
                     {
@@ -170,8 +177,8 @@ let layoutFunctions = {
                         let ddy = dy*d;
                         nodes[v].dx += -ddx;
                         nodes[v].dy += -ddy;
-                        nodes[u["number"]].dx += +ddx;
-                        nodes[u["number"]].dy += +ddy;
+                        nodes[un].dx += +ddx;
+                        nodes[un].dy += +ddy;
                     }
                 }
             }

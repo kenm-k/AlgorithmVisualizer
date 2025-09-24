@@ -96,13 +96,14 @@ class Node extends GObject
         return ((ax/scale - (this.x-ux))**2 + ((ay/scale - (this.y-uy)))**2 < this.radius**2);
     }
 
-    drawNode(currentGraph)
+    drawNode(currentGraph, pgraph)
     {
+        let id = this.id;
         context.beginPath();
-        let thisNode = currentGraph["graph"][this.id];
+        let thisNode = currentGraph["graph"][id];
 
         thisNode["color"] ??= 0xFFFFFF;
-        thisNode["label"] ??= this.id;
+        thisNode["label"] ??= id + pgraph["base"];
 
         let fpoint = Math.floor(this.radius/25*24);
 
@@ -224,7 +225,7 @@ class Graph extends GObject
 
     update(mframe)
     {
-        this.currentGraph = graph["graphs"][mframe];
+        this.currentGraph = this.graphs["graphs"][mframe];
         this.logger.getProxy().text = ("log" in this.currentGraph) ? this.currentGraph["log"] : "";
     }
 
@@ -232,7 +233,7 @@ class Graph extends GObject
     {
         for (let node of this.nodes)
         {
-            node.drawNode(this.currentGraph);
+            node.drawNode(this.currentGraph, this.graphs);
         }
 
         if (this.visualizeRange)
@@ -273,7 +274,6 @@ class Graph extends GObject
                         {
                             text : "Fruchterman-Reingoldのアルゴリズム",
                             value: "fruchterman_raingold",
-                            selected : 1,
                         }
                     ], param: "layoutFunction", id: "layoutFunction", default:this.layoutFunction},
 
@@ -320,13 +320,17 @@ class DGraph extends Graph
     draw(ratio)
     {
         context.fillStyle = "black";
+        let base = this.graphs["base"];
         for (let u of this.currentGraph["graph"])
         {
             for (let v of u["edges"])
             {
-                let dist = Math.sqrt((this.nodes[v["number"]].x-this.nodes[u["number"]].x)**2 + (this.nodes[v["number"]].y-this.nodes[u["number"]].y)**2);
-                let dx = this.nodes[v["number"]].radius * ((this.nodes[v["number"]].x-this.nodes[u["number"]].x)/dist);
-                let dy = this.nodes[v["number"]].radius * ((this.nodes[v["number"]].y-this.nodes[u["number"]].y)/dist);
+                let un = u["number"] - base;
+                let vn = v["number"] - base;
+
+                let dist = Math.sqrt((this.nodes[vn].x-this.nodes[un].x)**2 + (this.nodes[vn].y-this.nodes[un].y)**2);
+                let dx = this.nodes[vn].radius * ((this.nodes[vn].x-this.nodes[un].x)/dist);
+                let dy = this.nodes[vn].radius * ((this.nodes[vn].y-this.nodes[un].y)/dist);
 
                 context.beginPath();
 
@@ -334,9 +338,9 @@ class DGraph extends Graph
                 v["easing"] ??= "";
                 v["color"] ??= 0;
 
-                let ip = animateFunction[v["animation"]](this.nodes[u["number"]].x - ux + this.x, this.nodes[u["number"]].y - uy + this.y, this.nodes[v["number"]].x - dx - ux + this.x, this.nodes[v["number"]].y - dy - uy + this.y, easing[v["easing"]](ratio));
+                let ip = animateFunction[v["animation"]](this.nodes[un].x - ux + this.x, this.nodes[un].y - uy + this.y, this.nodes[vn].x - dx - ux + this.x, this.nodes[vn].y - dy - uy + this.y, easing[v["easing"]](ratio));
 
-                context.arrow( (this.nodes[u["number"]].x - ux)*scale, (this.nodes[u["number"]].y - uy)*scale,
+                context.arrow( (this.nodes[un].x - ux)*scale, (this.nodes[un].y - uy)*scale,
                     //終点のX座標
                     ip[0]*scale,
                     //終点のY座標
@@ -369,6 +373,12 @@ class DTree extends DGraph
 {
     root = 0;
 
+    constructor(x, y, nodes, graphs)
+    {
+        super(x, y, nodes, graphs);
+        this.root = graphs["base"];
+    }
+
     getParam()
     {
         let ret = super.getParam();
@@ -382,7 +392,7 @@ class DTree extends DGraph
             }
         );
 
-        ret.splice( searchObj(ret, "layoutButton"), 0, {mode: "number", param:"root", default: 0} );
+        ret.splice( searchObj(ret, "layoutButton"), 0, {mode: "number", param:"root", default: this.root} );
 
         return ret;
     }
@@ -405,12 +415,18 @@ class UDGraph extends Graph
             for (let v of u["edges"])
             {
                 v["animation"] ??= "";
-                let ip = animateFunction[v["animation"]]((this.nodes[u["number"]].x - ux), (this.nodes[u["number"]].y - uy), (this.nodes[v["number"]].x - ux), (this.nodes[v["number"]].y - uy), ratio );
+                v["easing"] ??= "";
+                v["color"] ??= 0;
+
+                let un = u["number"] - this.graphs["base"];
+                let vn = v["number"] - this.graphs["base"];
+
+                let ip = animateFunction[v["animation"]]((this.nodes[un].x - ux), (this.nodes[un].y - uy), (this.nodes[vn].x - ux), (this.nodes[vn].y - uy), ratio );
 
                 context.lineWidth = this.lineWidth*scale;
                 context.strokeStyle = "#" + v["color"].toString(16).padStart(6, '0');
 
-                context.moveTo( (this.nodes[u["number"]].x - ux)*scale , (this.nodes[u["number"]].y - uy)*scale );
+                context.moveTo( (this.nodes[un].x - ux)*scale , (this.nodes[un].y - uy)*scale );
                 context.lineTo( ip[0]*scale , ip[1]*scale );
             }
         }
@@ -433,11 +449,17 @@ class Tree extends UDGraph
 {
     root = 0;
 
+    constructor(x, y, nodes, graphs)
+    {
+        super(x, y, nodes, graphs);
+        this.root = graphs["base"];
+    }
+
     getParam()
     {
         let ret = super.getParam().concat(
             [
-                {mode: "number", param:"root", default: 0}
+                {mode: "number", param:"root", default: this.root}
             ]
         );
 

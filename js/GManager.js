@@ -36,10 +36,10 @@ let GManager_upfunc = new Array();
  *      
  *   "select" : メンバ変数の値をプルダウンで選択するモードです。
  *     - param* : メンバ変数の名前を指定します。
+ *     - default* : 初期値を設定します。optionsのvalueと同じ値を設定してください。
  *     - options : プルダウンの各項のオブジェクトの配列です。オブジェクトのプロパティは以下です。
  *         - text* : プルダウンで表示されるテキスト
  *         - value : プルダウンの値。指定しなければtextと同じ値となる。
- *         - selected : このキーが存在するとき、selected属性が付与されます。
  * 
  *   "button" : paramに干渉せず、関数を実行するボタンを表示するモードです。
  *     - text* : ボタンに表示するテキスト
@@ -207,7 +207,7 @@ function updateGMan()
                     {
                         opt["value"] ??= opt["text"];
                         ihtml += `
-                            <option value="${opt["value"]}" ${("selected" in opt) ? "selected" : ""} >${opt["text"]}</option>
+                            <option value="${opt["value"]}" ${(opt["value"] == p["default"]) ? "selected" : ""} >${opt["text"]}</option>
                         `;
                     }
 
